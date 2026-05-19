@@ -25,7 +25,30 @@ class RouteService {
       return null;
     }
 
-    // Fetch full route documents for each leg in the path
+    const routePairs = [];
+    for (let i = 0; i < result.path.length - 1; i++) {
+      routePairs.push({
+        fromHub: result.path[i],
+        toHub: result.path[i + 1],
+      });
+    }
+
+    const routeDocs = await Route.find({
+      $or: routePairs.map(pair => ({
+        fromHub: pair.fromHub,
+        toHub: pair.toHub,
+        isBlocked: false,
+      })),
+    })
+      .populate("fromHub", "name code")
+      .populate("toHub", "name code")
+      .lean();
+
+    const routeMap = {};
+    for (const doc of routeDocs) {
+      const key = `${doc.fromHub._id}-${doc.toHub._id}`;
+      routeMap[key] = doc;
+    }
     const legs = [];
     let totalDistance = 0;
     let totalTravelTime = 0;
@@ -34,15 +57,8 @@ class RouteService {
     for (let i = 0; i < result.path.length - 1; i++) {
       const fromId = result.path[i];
       const toId = result.path[i + 1];
-
-      const routeDoc = await Route.findOne({
-        fromHub: fromId,
-        toHub: toId,
-        isBlocked: false,
-      })
-        .populate("fromHub", "name code")
-        .populate("toHub", "name code")
-        .lean();
+      const key = `${fromId}-${toId}`;
+      const routeDoc = routeMap[key];
 
       if (routeDoc) {
         legs.push({
