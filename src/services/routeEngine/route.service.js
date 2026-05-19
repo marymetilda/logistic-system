@@ -39,12 +39,15 @@ class RouteService {
         fromHub: fromId,
         toHub: toId,
         isBlocked: false,
-      }).lean();
+      })
+        .populate("fromHub", "name code")
+        .populate("toHub", "name code")
+        .lean();
 
       if (routeDoc) {
         legs.push({
-          fromHub: fromId,
-          toHub: toId,
+          fromHub: routeDoc.fromHub,
+          toHub: routeDoc.toHub,
           distance: routeDoc.distance,
           travelTime: routeDoc.travelTime,
           fuelCost: routeDoc.fuelCost,

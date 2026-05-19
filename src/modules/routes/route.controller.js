@@ -19,7 +19,12 @@ exports.createRoute = async (req, res) => {
 
     await graphService.invalidateGraph();
 
-    res.status(201).json({ success: true, data: route, message: "Route created successfully" });
+    const populatedRoute = await Route.findById(route._id)
+      .populate("fromHub", "name code")
+      .populate("toHub", "name code")
+      .lean();
+
+    res.status(201).json({ success: true, data: populatedRoute, message: "Route created successfully" });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }
@@ -66,7 +71,12 @@ exports.toggleBlockRoute = async (req, res) => {
 
     await graphService.invalidateGraph();
 
-    res.json({ success: true, data: updated, message: `Route ${isBlocked ? "blocked" : "unblocked"} successfully` });
+    const populatedRoute = await Route.findById(updated._id)
+      .populate("fromHub", "name code")
+      .populate("toHub", "name code")
+      .lean();
+
+    res.json({ success: true, data: populatedRoute, message: `Route ${isBlocked ? "blocked" : "unblocked"} successfully` });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -91,7 +101,12 @@ exports.updateTraffic = async (req, res) => {
 
     await graphService.invalidateGraph();
 
-    res.json({ success: true, data: updated, message: "Traffic conditions updated" });
+    const populatedRoute = await Route.findById(updated._id)
+      .populate("fromHub", "name code")
+      .populate("toHub", "name code")
+      .lean();
+
+    res.json({ success: true, data: populatedRoute, message: "Traffic conditions updated" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -116,7 +131,10 @@ exports.detectCycles = async (req, res) => {
 
 exports.getAllRoutes = async (req, res) => {
   try {
-    const routes = await Route.find().lean();
+    const routes = await Route.find()
+      .populate("fromHub", "name code")
+      .populate("toHub", "name code")
+      .lean();
     res.json({ success: true, data: routes, message: "Routes retrieved successfully" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

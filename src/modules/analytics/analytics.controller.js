@@ -5,6 +5,8 @@ exports.topFastest = async (req, res) => {
     const routes = await Route.find({ isBlocked: false })
       .sort({ travelTime: 1 })
       .limit(5)
+      .populate("fromHub", "name code")
+      .populate("toHub", "name code")
       .lean();
 
     res.json({ success: true, data: routes });

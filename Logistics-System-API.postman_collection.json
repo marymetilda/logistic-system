@@ -301,19 +301,32 @@
             "description": "Update traffic level for a route (LOW, MEDIUM, HIGH) (requires ADMIN or DISPATCHER role)"
           }
         },
-        {
-          "name": "Detect Cycles",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/routes/cycles",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "routes", "cycles"]
-            },
-            "description": "Detect cycles in the route graph"
-          }
-        }
+         {
+           "name": "Detect Cycles",
+           "request": {
+             "method": "GET",
+             "header": [],
+             "url": {
+               "raw": "{{baseUrl}}/api/routes/cycles",
+               "host": ["{{baseUrl}}"],
+               "path": ["api", "routes", "cycles"]
+             },
+             "description": "Detect cycles in the route graph"
+           }
+         },
+         {
+           "name": "Get All Routes",
+           "request": {
+             "method": "GET",
+             "header": [],
+             "url": {
+               "raw": "{{baseUrl}}/api/routes",
+               "host": ["{{baseUrl}}"],
+               "path": ["api", "routes"]
+             },
+             "description": "Get all routes"
+           }
+         }
       ]
     },
     {
