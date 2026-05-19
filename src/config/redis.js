@@ -29,6 +29,8 @@ async function initRedis() {
     console.log("Redis connected successfully");
   } catch (err) {
     console.warn("Redis unavailable — graph caching disabled, falling back to DB queries:", err.message);
+    // Remove the error listener so the client stops retrying in the background
+    client.removeAllListeners("error");
     client = null;
     isConnected = false;
   }
