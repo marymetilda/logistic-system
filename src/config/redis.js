@@ -11,26 +11,38 @@ const noop = {
 
 async function initRedis() {
   try {
-    client = redis.createClient({ 
+    client = redis.createClient({
       url: process.env.REDIS_URL || "redis://127.0.0.1:6379",
       socket: {
         connectTimeout: 5000,
         lazyConnect: false,
+        // Return `false` to tell redis v5 to stop reconnecting.
+        // Returning `null` is invalid and triggers its own error loop.
+        reconnectStrategy: () => false,
       },
     });
-    
+
     client.on("error", (err) => {
       console.warn("Redis error:", err.message);
       isConnected = false;
     });
-    
+
     await client.connect();
     isConnected = true;
     console.log("Redis connected successfully");
   } catch (err) {
     console.warn("Redis unavailable — graph caching disabled, falling back to DB queries:", err.message);
-    // Remove the error listener so the client stops retrying in the background
-    client.removeAllListeners("error");
+    // Fully tear down the client so it stops retrying in the background.
+    // `disconnect()` can throw ClientClosedError when the connection was
+    // never established, so swallow any error here.
+    if (client) {
+      client.removeAllListeners("error");
+      try {
+        client.disconnect();
+      } catch {
+        // client was never connected — nothing to clean up
+      }
+    }
     client = null;
     isConnected = false;
   }
