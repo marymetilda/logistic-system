@@ -7,35 +7,37 @@ class GraphService {
 
     if (cached) return JSON.parse(cached);
 
-    const routes = await Route.find({}).lean();
-    const graph = {};
+     const routes = await Route.find({}).lean();
+     const graph = {};
 
-    for (const route of routes) {
-      if (route.isBlocked) continue;
+     for (const route of routes) {
+       if (route.isBlocked) continue;
 
-      const trafficPenality =
-        route.trafficLevel === "LOW"
-          ? 1
-          : route.trafficLevel === "MEDIUM"
-            ? 5
-            : 10;
+       const trafficPenality =
+         route.trafficLevel === "LOW"
+           ? 1
+           : route.trafficLevel === "MEDIUM"
+             ? 5
+             : 10;
 
-      const weight =
-        route.distance * 0.4 +
-        route.travelTime * 0.3 +
-        route.fuelCost * 0.2 +
-        trafficPenality * 0.1;
+       const weight =
+         route.distance * 0.4 +
+         route.travelTime * 0.3 +
+         route.fuelCost * 0.2 +
+         trafficPenality * 0.1;
 
-      const from = String(route.fromHub);
-      const to = String(route.toHub);
+       const from = String(route.fromHub);
+       const to = String(route.toHub);
 
-      if (!graph[from]) graph[from] = [];
+       // Ensure both from and to nodes exist in the graph
+       if (!graph[from]) graph[from] = [];
+       if (!graph[to]) graph[to] = [];
 
-      graph[from].push({
-        node: to,
-        weight,
-      });
-    }
+       graph[from].push({
+         node: to,
+         weight,
+       });
+     }
 
     await redis.setEx("GRAPH", 300, JSON.stringify(graph));
 
